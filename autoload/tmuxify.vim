@@ -20,12 +20,12 @@ endfunction
 
 " s:complete_windows() {{{1
 function! s:complete_windows(...) abort
-  return system('tmux list-windows -F "#I" -t '. b:session)
+  return system('tmux list-windows -F "#I" -t '. g:session)
 endfunction
 
 " s:complete_panes() {{{1
 function! s:complete_panes(...) abort
-  return system('tmux list-panes -F "#P" -t '. b:session .':'. b:window)
+  return system('tmux list-panes -F "#P" -t '. g:session .':'. g:window)
 endfunction
 
 " s:get_pane_num_from_id() {{{1
@@ -39,8 +39,8 @@ function! tmuxify#pane_create(...) abort
   if !exists('$TMUX')
     echomsg 'tmuxify: This Vim is not running in a tmux session!'
     return
-  elseif exists('b:pane_id')
-    let pane_num = s:get_pane_num_from_id(b:pane_id)
+  elseif exists('g:pane_id')
+    let pane_num = s:get_pane_num_from_id(g:pane_id)
     if !empty(pane_num)
       echomsg "tmuxify: I'm already associated with pane ". pane_num .'!'
       return
@@ -48,7 +48,7 @@ function! tmuxify#pane_create(...) abort
   endif
 
   call system('tmux split-window -d '. g:tmuxify_pane_split .' -l '. g:tmuxify_pane_size)
-  let [ b:pane_id, b:pane_num ] = map(split(system("tmux list-panes -F '#D #P' | awk '$1 > id { id=$1; num=$2 } END { print substr(id, 2), num }'"), ' '), 'str2nr(v:val)')
+  let [ g:pane_id, g:pane_num ] = map(split(system("tmux list-panes -F '#D #P' | awk '$1 > id { id=$1; num=$2 } END { print substr(id, 2), num }'"), ' '), 'str2nr(v:val)')
 
   if exists('a:1')
     call tmuxify#pane_send(a:1)
@@ -59,19 +59,19 @@ endfunction
 
 " tmuxify#pane_kill() {{{1
 function! tmuxify#pane_kill() abort
-  if !exists('b:pane_id')
+  if !exists('g:pane_id')
     echomsg "tmuxify: I'm not associated with any pane! Run :TxCreate."
     return
   endif
 
-  let pane_num = s:get_pane_num_from_id(b:pane_id)
+  let pane_num = s:get_pane_num_from_id(g:pane_id)
   if empty(pane_num)
     echomsg 'tmuxify: The associated pane was already closed! Run :TxCreate.'
   else
     call system('tmux kill-pane -t '. pane_num)
   endif
 
-  unlet b:pane_id b:pane_num
+  unlet g:pane_id g:pane_num
 endfunction
 
 " tmuxify#pane_set() {{{1
@@ -81,24 +81,24 @@ function! tmuxify#pane_set() abort
     return
   endif
 
-  let b:session = input('Session: ', '', 'custom,<SNR>'. s:SID() .'_complete_sessions')
-  let b:window  = input('Window: ',  '', 'custom,<SNR>'. s:SID() .'_complete_windows')
-  let b:pane    = input('Pane: ',    '', 'custom,<SNR>'. s:SID() .'_complete_panes')
+  let g:session = input('Session: ', '', 'custom,<SNR>'. s:SID() .'_complete_sessions')
+  let g:window  = input('Window: ',  '', 'custom,<SNR>'. s:SID() .'_complete_windows')
+  let g:pane    = input('Pane: ',    '', 'custom,<SNR>'. s:SID() .'_complete_panes')
 
   " TODO: support other windows/sessions
-  "let b:pane = b:session .':'.  b:window .'.'. b:pane
+  "let g:pane = g:session .':'.  g:window .'.'. g:pane
 
-  let b:pane_num = b:pane
-  let b:pane_id  = str2nr(system("tmux list-panes -F '#D #P' | awk '$2 == ". b:pane ." { print substr($1, 2) }'"))
-  if empty(b:pane_id)
-    redraw | echomsg 'tmuxify: There is no pane '. b:pane_num .'!'
+  let g:pane_num = g:pane
+  let g:pane_id  = str2nr(system("tmux list-panes -F '#D #P' | awk '$2 == ". g:pane ." { print substr($1, 2) }'"))
+  if empty(g:pane_id)
+    redraw | echomsg 'tmuxify: There is no pane '. g:pane_num .'!'
     return
   endif
 endfunction
 
 " tmuxify#pane_run() {{{1
 function! tmuxify#pane_run(...) abort
-  if !exists('b:pane_id') && !tmuxify#pane_create()
+  if !exists('g:pane_id') && !tmuxify#pane_create()
     return
   endif
 
@@ -122,11 +122,11 @@ endfunction
 
 " tmuxify#pane_send() {{{1
 function! tmuxify#pane_send(...) abort
-  if !exists('b:pane_id') && !tmuxify#pane_create()
+  if !exists('g:pane_id') && !tmuxify#pane_create()
     return
   endif
 
-  let pane_num = s:get_pane_num_from_id(b:pane_id)
+  let pane_num = s:get_pane_num_from_id(g:pane_id)
   if empty(pane_num)
     echomsg 'tmuxify: The associated pane was already closed! Run :TxCreate.'
     return
@@ -143,12 +143,12 @@ endfunction
 
 " tmuxify#pane_send_raw() {{{1
 function! tmuxify#pane_send_raw(cmd) abort
-  if !exists('b:pane_id')
+  if !exists('g:pane_id')
     echomsg "tmuxify: I'm not associated with any pane! Run :TxCreate."
     return
   endif
 
-  let pane_num = s:get_pane_num_from_id(b:pane_id)
+  let pane_num = s:get_pane_num_from_id(g:pane_id)
   if empty(pane_num)
     echomsg 'tmuxify: The associated pane was already closed! Run :TxCreate.'
     return
