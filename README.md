@@ -13,6 +13,9 @@ Features:
 - all the plugin configuration happens in one dictionary that holds filetypes as
   keys and run commands as values
 
+__NOTE__: This plugin needs tmux 1.6 with a certain patch level. You're safe
+with versions 1.7+.
+
 ## Feedback, please!
 
 If you use any of my plugins, star it on github. This is a great way of getting
@@ -41,17 +44,19 @@ Put these variables into your vimrc for great enjoyment. The shown examples
 are also the default values.
 
 ```vim
-let g:tmuxify_pane_split = '-v'
+let g:tmuxify_custom_command = 'tmux split-window -d'
 ```
 
-Split either vertically or horizontally. The two possible values are therefore
-'-v' and '-h'.
+Use this option if you want to overwrite that default command for creating a new
+pane.
+
+_(Examples are given in `:h tmuxify-options`)_
 
 ```vim
-let g:tmuxify_pane_size = '10'
+let g:tmuxify_map_prefix = '<leader>m'
 ```
 
-The size of the associated pane.
+What to start mappings with. Set it to `''` to disable mappings.
 
 ```vim
 let g:tmuxify_run = {}
